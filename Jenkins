@@ -1,15 +1,16 @@
 pipeline {
-    agent { label 'jenkins-slave'}
-
+    agent { label 'jenkins-slave' }
     stages {
         stage('Build') {
             steps {
-                echo 'Building..'
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Testing..'
+               withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                   sh """
+                        docker login -u $USERNAME -p $PASSWORD
+                        docker build -t alielhabal70/bakehouse:${BUILD_NUMBER} .
+                        docker push alielhabal70/bakehouse:${BUILD_NUMBER}
+                        echo ${BUILD_NUMBER} > ../bakehouse-build-number.txt
+                   """
+               }
             }
         }
         stage('Deploy') {
